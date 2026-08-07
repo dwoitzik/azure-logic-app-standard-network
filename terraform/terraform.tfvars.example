@@ -1,0 +1,25 @@
+name        = "workflows"
+environment = "dev"
+location    = "westeurope"
+
+# Resource Group name is derived as rg-<name>-<environment> when empty.
+rg_name = ""
+
+vnet_address_space             = ["10.1.0.0/16"]
+integration_subnet_cidrs       = ["10.1.1.0/26"]
+private_endpoint_subnet_cidrs  = ["10.1.2.0/26"]
+
+# WS1 | WS2 | WS3
+service_plan_sku = "WS1"
+
+tags = {
+  project = "demo"
+}
+
+# Optional extra app settings (merged into the Logic App Standard).
+# app_settings = {
+#   "SOME_SETTING" = "value"
+# }
+
+# Deploy an additional serverless Consumption workflow next to the Standard one.
+# create_consumption_workflow = true

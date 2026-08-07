@@ -1,0 +1,16 @@
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Module repo — lock file should not be committed for a reusable module
+**/.terraform.lock.hcl
+
+# Bootstrap content generated during plan/apply
+**/.bootstrap-content/*
