@@ -65,7 +65,9 @@ resource "azurerm_service_plan" "main" {
 
 resource "azurerm_storage_account" "main" {
   #checkov:skip=CKV_AZURE_206: LRS is the default for the template - set storage_replication_type = "ZRS" for production workloads
+  #checkov:skip=CKV_AZURE_33: Queue logging is configured via azurerm_storage_account_queue_properties.main (dedicated resource, replaces the deprecated queue_properties block)
   #checkov:skip=CKV2_AZURE_40: Logic App Standard requires Shared Key access (storage_account_access_key) for the content share; runtime data-plane access uses Managed Identity
+  #checkov:skip=CKV2_AZURE_41: Data-plane access uses Managed Identity, no SAS token workflows; sas_policy is set defensively
   #checkov:skip=CKV2_AZURE_1: Customer-Managed Key encryption requires an extra Key Vault - out of scope for the base template (platform SSE is enabled by default)
   name                            = local.storage_name
   resource_group_name             = azurerm_resource_group.main.name
