@@ -53,6 +53,8 @@ resource "azurerm_subnet" "private_endpoints" {
 }
 
 resource "azurerm_service_plan" "main" {
+  #checkov:skip=CKV_AZURE_212: Single-instance default for the template - scale via ElasticPremium / runtime_scale_monitoring in production
+  #checkov:skip=CKV_AZURE_225: WS1/WS2/WS3 (Logic Apps Standard) SKUs do not support zone redundancy
   name                = local.plan_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -62,12 +64,15 @@ resource "azurerm_service_plan" "main" {
 }
 
 resource "azurerm_storage_account" "main" {
+  #checkov:skip=CKV_AZURE_206: LRS is the default for the template - set storage_replication_type = "ZRS" for production workloads
+  #checkov:skip=CKV2_AZURE_40: Logic App Standard requires Shared Key access (storage_account_access_key) for the content share; runtime data-plane access uses Managed Identity
+  #checkov:skip=CKV2_AZURE_1: Customer-Managed Key encryption requires an extra Key Vault - out of scope for the base template (platform SSE is enabled by default)
   name                            = local.storage_name
   resource_group_name             = azurerm_resource_group.main.name
   location                        = azurerm_resource_group.main.location
   account_kind                    = "StorageV2"
   account_tier                    = "Standard"
-  account_replication_type        = "LRS"
+  account_replication_type        = var.storage_replication_type
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
   public_network_access_enabled   = false
@@ -77,7 +82,39 @@ resource "azurerm_storage_account" "main" {
     bypass         = ["AzureServices"]
   }
 
+  blob_properties {
+    delete_retention_policy {
+      days = 7
+    }
+
+    container_delete_retention_policy {
+      days = 7
+    }
+  }
+
+  share_properties {
+    retention_policy {
+      days = 7
+    }
+  }
+
+  sas_policy {
+    expiration_period = "90.00:00:00"
+    expiration_action = "Log"
+  }
+
   tags = local.tags
+}
+
+resource "azurerm_storage_account_queue_properties" "main" {
+  storage_account_id = azurerm_storage_account.main.id
+
+  logging {
+    version = "1.0"
+    delete  = true
+    read    = true
+    write   = true
+  }
 }
 
 resource "azurerm_storage_share" "main" {

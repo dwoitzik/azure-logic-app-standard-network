@@ -56,6 +56,17 @@ variable "service_plan_sku" {
   }
 }
 
+variable "storage_replication_type" {
+  type        = string
+  description = "Replication strategy for the Storage Account. Use ZRS (or GRS) for production."
+  default     = "LRS"
+
+  validation {
+    condition     = contains(["LRS", "ZRS", "GRS", "RAGRS", "GZRS", "RAGZRS"], var.storage_replication_type)
+    error_message = "storage_replication_type must be a valid Azure storage replication type."
+  }
+}
+
 variable "app_settings" {
   type        = map(string)
   description = "Additional app settings merged into the Logic App Standard (e.g. workflow-specific settings)."
